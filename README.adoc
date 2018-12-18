@@ -2,6 +2,11 @@
 
 == Object Detection in Real Time
 
-Once a Deep Neural Network model finishes the training stage, it can be deployed into a production environment. In this stage, one of the concerns is the inference time. It is usually demanded that the DNN model is able to provide answer with small latency (e.g., within tens of milliseconds for each question or sample).
+Once a Deep Neural Network model (e.g., ResNet) finishes the training stage, it can be deployed into a production environment. In the second stage, one of the concerns is the inference time. It is usually demanded that the DNN model is able to provide answer with small latency (e.g., within tens of milliseconds for each question or sample).
+
+.General comments
+* The inference time will depend heavily on the complexity of the model and the resolution of the images
+  - The complexity of the model (the number of parameters and the network architecture) will be directly related to the required image resolution
+* The impact of image complexity (e.g, the number of object present in the image) on the inference time will be minor.
 
 https://medium.com/syncedreview/deep-learning-in-real-time-inference-acceleration-and-continuous-training-17dac9438b0b[Here] is a good report on DNN Inference Acceleration
