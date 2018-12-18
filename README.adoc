@@ -1,1 +1,3 @@
 # Object-Detection-and-Tracking
+
+https://medium.com/syncedreview/deep-learning-in-real-time-inference-acceleration-and-continuous-training-17dac9438b0b
