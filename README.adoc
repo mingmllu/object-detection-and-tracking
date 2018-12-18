@@ -1,3 +1,7 @@
-# Object-Detection-and-Tracking
+# Object Detection and Tracking
 
-https://medium.com/syncedreview/deep-learning-in-real-time-inference-acceleration-and-continuous-training-17dac9438b0b
+== Object Detection in Real Time
+
+Once a Deep Neural Network model finishes the training stage, it can be deployed into a production environment. In this stage, one of the concerns is the inference time. It is usually demanded that the DNN model is able to provide answer with small latency (e.g., within tens of milliseconds for each question or sample).
+
+https://medium.com/syncedreview/deep-learning-in-real-time-inference-acceleration-and-continuous-training-17dac9438b0b[Here] is a good report on DNN Inference Acceleration
