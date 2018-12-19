@@ -13,4 +13,5 @@ Once a Deep Neural Network model (e.g., ResNet) finishes the training stage, it 
   - TPU: an ASIC designed by Google from the ground up for machine learning. Google reported that at 7ms per-prediction latency for a common MLP architecture, TPU offers 15x to 30x higher throughput than CPU and GPU, and for a common CNN architecture, TPU achieves peak 70x better performance than CPU.
 * Inference acceleration — Algorithms
 - https://arxiv.org/pdf/1710.09282.pdf[Model compression]: compress overparameterized fully connected layers to meet strict latency requirements without significant performance degradtion, for example, bucketizing connection weights (pseudo)randomly using a hash function or by vector quantization.
+
 https://medium.com/syncedreview/deep-learning-in-real-time-inference-acceleration-and-continuous-training-17dac9438b0b[Here] is a good report on DNN Inference Acceleration.
