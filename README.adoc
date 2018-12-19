@@ -1,6 +1,8 @@
-# Object Detection and Tracking
+== Object Detection and Tracking
 
-== Object Detection in Real Time
+Consider the enhancement of objection detection in two aspects: performance improvement and inference acceleration with no significant performance losses.
+
+=== Object Detection in Real Time
 
 Once a Deep Neural Network model (e.g., ResNet) finishes the training stage, it can be deployed into a production environment to answer questions or make predictions. In the second stage, one of the concerns is the inference time. It is usually demanded that the DNN model is able to provide answer or prediction with small latency (e.g., within tens of milliseconds for each question or sample).
 
@@ -8,10 +10,21 @@ Once a Deep Neural Network model (e.g., ResNet) finishes the training stage, it 
 * The inference time will depend heavily on the complexity of the model and the resolution of the images
   - The complexity of the model (the number of parameters and the network architecture) will be directly related to the required image resolution
 * The impact of image complexity (e.g, the number of objects present in the image) on the inference time will be minor.
-* Inference acceleration — Hardware
+* Inference accerlation is desired for a server to be able to handle as many video cameras as possible
+
+.Inference acceleration
+* Hardware
   - GPU: Can provide significant inference speedups and power efficiency (images/second/watts). Based on https://devblogs.nvidia.com/nvidia-serves-deep-learning-inference/[the performance test results] for TensorFlow ResNet-50 model running an Ubuntu 16.04 workstation with an Intel® Xeon® Gold 6140 CPU (Skylake) and an NVIDIA V100 GPU, at ~50ms latency target, nearly 80 inferences can be provided per second for a TensorFlow ResNet-50 model running on the CPU (handle up to 8 inference requests in parallel), while the V100 GPU allows to deliver over 11x speedup in inferences using a TensorFlow model TF_NEED_CUDA (allow up to 8 parallel requests to run on the GPU) compared to CPU.
-  - TPU: an ASIC designed by Google from the ground up for machine learning. Google reported that at 7ms per-prediction latency for a common MLP architecture, TPU offers 15x to 30x higher throughput than CPU and GPU, and for a common CNN architecture, TPU achieves peak 70x better performance than CPU.
-* Inference acceleration — Algorithms
-- https://arxiv.org/pdf/1710.09282.pdf[Model compression]: compress overparameterized fully connected layers to meet strict latency requirements without significant performance degradtion, for example, bucketizing connection weights (pseudo)randomly using a hash function or by vector quantization.
+  - TPU: an ASIC designed by Google from the ground up for machine learning. Google reported that at 7ms per-prediction latency 
+  for a common MLP architecture, TPU offers 15x to 30x higher throughput than CPU and GPU, and for a common CNN architecture, TPU achieves peak 70x better performance than CPU.
+* Algorithms (https://arxiv.org/pdf/1710.09282.pdf[Model compression])
+Compress overparameterized fully connected layers to meet strict latency requirements without significant performance degradtion, for example, bucketizing connection weights (pseudo)randomly using a hash function or by vector quantization.
+  - Parameter prunning and sharing: remove redundant and uncritical parameters in a pre-trained CNN model and then the CNN is retrained to adjust the weights of the remaining sparse connections.
+  - Low-rank factorization: Use matrix/tensor decomposition to estimate the informative parameters of deep CNNs.
+  - Transferred/compact convolutional filters: design special structural convolutional filters to reduce the storage and computation complexity
+  - Knowledge distillation: learn a distilled model and train a more compact neural network to produce the output of a larger network.
 
 https://medium.com/syncedreview/deep-learning-in-real-time-inference-acceleration-and-continuous-training-17dac9438b0b[Here] is a good report on DNN Inference Acceleration.
+
+
+=== Network Models for Object Detection and Semantic Segmentation
