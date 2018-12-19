@@ -2,14 +2,14 @@
 
 == Object Detection in Real Time
 
-Once a Deep Neural Network model (e.g., ResNet) finishes the training stage, it can be deployed into a production environment. In the second stage, one of the concerns is the inference time. It is usually demanded that the DNN model is able to provide answer or prediction with small latency (e.g., within tens of milliseconds for each question or sample).
+Once a Deep Neural Network model (e.g., ResNet) finishes the training stage, it can be deployed into a production environment to answer questions or make predictions. In the second stage, one of the concerns is the inference time. It is usually demanded that the DNN model is able to provide answer or prediction with small latency (e.g., within tens of milliseconds for each question or sample).
 
 .General comments
 * The inference time will depend heavily on the complexity of the model and the resolution of the images
   - The complexity of the model (the number of parameters and the network architecture) will be directly related to the required image resolution
-* The impact of image complexity (e.g, the number of object present in the image) on the inference time will be minor.
+* The impact of image complexity (e.g, the number of objects present in the image) on the inference time will be minor.
 * Inference acceleration — hardware
-  - GPU: may provide ~30x improvement compared to CPU
+  - GPU: Can provide significant inference speedups and power efficiency (images/second/watts). Based on https://devblogs.nvidia.com/nvidia-serves-deep-learning-inference/[the performance test results] for TensorFlow ResNet-50 model running an Ubuntu 16.04 workstation with an Intel® Xeon® Gold 6140 CPU (Skylake) and an NVIDIA V100 GPU, at ~50ms latency target, nearly 80 inferences can be provided per second for a TensorFlow ResNet-50 model running on the CPU (handle up to 8 inference requests in parallel), while the V100 GPU allows to deliver over 11x speedup in inferences using a TensorFlow model TF_NEED_CUDA (allow up to 8 parallel requests to run on the GPU) compared to CPU.
   - FPGA: 
 
 https://medium.com/syncedreview/deep-learning-in-real-time-inference-acceleration-and-continuous-training-17dac9438b0b[Here] is a good report on DNN Inference Acceleration
