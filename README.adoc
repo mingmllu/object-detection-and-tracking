@@ -1,30 +1,241 @@
 == Object Detection and Tracking
 
-Consider the enhancement of objection detection in two aspects: performance improvement and inference acceleration with no significant performance losses.
+An investigation into the state-of-the-art objection detection methods is conducted in order to enhance the existing lab demo system.
+We'll pay attention to the following aspects in the investigation:
+
+* Basic idea behind each method/model/algorithm
+* Performance improvement (accuracies, mAP etc.)
+* Inference acceleration with no significant performance losses (maximize throughput with latency constraint)
+* Implementations in open-source frameworks publicly available (e.g., pre-trained models and source code published in github)
+
+https://github.com/abhineet123/Deep-Learning-for-Tracking-and-Detection[Here] please find a collection of papers and comments on deep-learning based detection and tracking models.
+
+=== Network Architectures for Object Detection and Semantic Segmentation
+
+What is the state of the art object detection algorithm in 2018 ?
+
+Instance segmentation = Object detection (pixel-wise labels) + semantic segmentation (color mask)
+Mask R-CNN = Faster R-CNN + FCN to achieve instance segmentation
+RoI Aligning preserves spatial orientation of features with no loss
+
+Semantic segmentation
+
+* Thing classes (countable objects such as person, car, elephant etc.)
+* Stuff classes (amorphous regions of similar texture or material such as grass, wall, sky) etc.)
+* Panoptic classes (addresses both stuff and thing classes including everything visible in one view)
+
+http://openaccess.thecvf.com/content_cvpr_2017/papers/Huang_SpeedAccuracy_Trade-Offs_for_CVPR_2017_paper.pdf[Comparisons between Faster R-CNN and other frameworks]
+
+* https://github.com/facebookresearch/Detectron[facebookresearch/Detectron]
+  - https://arxiv.org/pdf/1703.06870.pdf[Mask R-CNN] Compared to Faster R-CNN, Mask R-CNN uses ROIAlign by reducing quantization in coordinates (from image to feature maps and from feature maps to RoI feature maps) to achieve significant improvements in the accuracy. Mask R-CNN https://github.com/matterport/Mask_RCNN[implementation in TensorFlow]
+  - https://arxiv.org/abs/1611.05431[ResNeXt{50,101,152}] Improves top-5 error rate from 6.8% (ResNet) to 5.7% (ImageNet-5K) with similar network complexity
+  - https://github.com/deepsense-ai/roi-pooling[RoIPooling example]
+* https://arxiv.org/abs/1711.07264[Light-Head R-CNN]
+* https://arxiv.org/pdf/1608.06993.pdf[DenseNet]
+  - https://github.com/liuzhuang13/DenseNet[DenseNet in Torch]
+  - https://github.com/YixuanLi/densenet-tensorflow[DenseNet in TensorFlow]
+* https://arxiv.org/pdf/1512.03385.pdf[ResNet]
+  - https://github.com/KaimingHe/deep-residual-networks[ResNet in Caffe]
+  - https://github.com/tensorflow/models/tree/master/official/resnet[ResNet in TensorFlow]
+
+The most important things to remember about RoI Pooling?
+
+* It’s used for object detection tasks
+* It allows us to reuse the feature map from the convolutional network
+* It can significantly speed up both train and test time
+* It allows to train object detection systems in an end-to-end manner
+
+https://lilianweng.github.io/lil-log/2017/12/31/object-recognition-for-dummies-part-3.html[Object Recognition for Dummies Part 3: R-CNN Family]
+
+https://medium.com/nanonets/how-to-do-image-segmentation-using-deep-learning-c673cc5862ef[How to do Semantic Segmentation using Deep learning]
+https://towardsdatascience.com/semantic-segmentation-with-deep-learning-a-guide-and-code-e52fc8958823[Semantic Segmentation with Deep Learning]
+
+https://arxiv.org/abs/1512.02325[SSD: Single Shot MultiBox Detector]
+SSD uses a single feedward convolutional network to directly predict classes and anchor (i.e.,box) offsets without requiring a second stage per-proposal classification operation. For SSD, because there is no follow-up feature resampling step as in Faster R-CNN, the classification task for small objects is relatively hard. The following data augmentation strategy will help improve the performance dramatically, especially on small dataset:
+* Use the entire original input image
+* Sample a patch so that the minimum jaccard overlap (IoU) with the objects is 0.1, 0.3, 0.5, 0.7, or 0.9. The size of each sampled patch is [0.1, 1] of the original image size and the aspect ratio is between 1/2 and 2. Keep the overlapped part of the ground truth box if the center of it is in the sampled patch. REsize each sampled patch to fixed size; horizontally flip each patch with probability of 0.5. Apply some photo-metric distortions.
+* Randomly sample a patch
+
+Two challenges when applying deep CNNs to the task of semantic segmentation:
+
+* The reduced feature resolution caused by consecutive pooling operations or convolution striding, which allows deep CNNs to learn increasingly abstract feature representations. For the so-called dense prediction tasks like segmentation, detailed spatial information is desired. With atrous convolution, one is able to control the resolution at which feature responses are computed within DCNNs without requiring learning extra parameters.
+* The existence of objects at multiple scales
+
+=== Object Tracking 
+
+Tracking can be defined as the problem of estimating or predicting the trajectory of an object of interest in the images as it moves around a scene given an initial
+annotation in the first frame. The goal of single-object tracking is to locate the object in subsequent video frames in spite of object movement, changes, illumination, motion blur, deformation, and occlusion in the camera's viewpoint. The goal of multi-object tracking (MOT) is to estimate the locations of multiple objects in the video and maintain their identities consistently in order to yield their individual trajectories.
+
+The object tracking will deppend on the object detection (object localization, classification). The traditional trackers are based on low-level, hand-crafted features. Use cases for single-object tracking include autonomous driving, unmanned aerial vehicle, security surveillance, robotics, and so on.
+
+http://cvlab.hanyang.ac.kr/tracker_benchmark/[Visual Tracker Benchmark]: This link contains data and code of the benchmark evaluation of online visual tracking algorithms. More details about the tracker benchmark can be found in this paper 
+http://faculty.ucmerced.edu/mhyang/papers/cvpr13_benchmark.pdf[Online Object Tracking: A Benchmark]
+
+==== Main Modules in Object Tracking:
+
+* Object Representation Scheme: A global visual representation reflects the global statistical characteristics of object appearance
+  - raw pixel representation
+  - optical flow representation
+  - histogram representation
+  - covariance representation
+  - wavelet filtering-based representation
+  - active contour representation
+* Search Mechanism: To estimate the state of the target objects, deterministic (e.g.,  gradient descent) or stochastic (e.g., particle filters) methods have been used.
+* Model Update: It is crucial to update the target representation or model to account for appearance variations. It is a challenge to get an adaptive appearance model to avoid drifts.
+* Context and Fusion of Trackers: Context information is very important for object tracking. The context information is especially helpful when the target is fully occluded or leaves the image region.
+
+==== Evaluation Methodology for Object Tracking
+
+* Precision plot: an evaluation metric on tracking precision is the center location error, which is defined as the average Euclidean distance between the center locations of the tracked targets and the manually labeled ground truths. The percentage of frames whose estimated location is within the given threshold distance of the ground truth
+* Success plot: This is about the bounding box overlap (IoU). W count the number of successful frames whose overlap S is larger than the given threshold. The success plot shows the ratios of successful frames at the thresholds varied from 0 to 1.
+* Robustness evaluation: analyze a tracker’s spatial and temporal robustness to initialization.
+
+
+==== Some Methods for Single-Object Tracking
+
+* Classification-based trackers: A tracker will sample ”foreground” patches near the target object and ”background” patches farther away from the target. These patches are then used to train a foreground-background classifier, and this classifier is used to score potential patches in the next frame to estimate the new target location. Usually, the classifier is first trained off-line and fine-tuned during online tracking. Many neural-network trackers following this approach have surpassed traditional trackers and achieved state-of-the-art performance. Unfortunately, these trackers are inefficient at run-time since neural networks are very slow to train in an online fashion. Another drawback of such a design is that it does not fully utilize all video information, particularly explicit temporal correlation.
+* Regression-based trackers: Object tracking is treated as a regression instead of classification problem. Some proposed deep-learning methods can run at frame-rates beyond real time while maintaining state-of-the-art performance. However, they only extract features independently from each video frame and only perform comparison between two consecutive frames, prohibiting them from fully utilizing longer-term contextual and temporal information.
+* Recurrent-neural-network trackers: An RNN is trained to predict the absolute position of the target in each frame using the attention mechanism.
+
+==== https://arxiv.org/pdf/1701.08936.pdf[Deep Reinforcement Learning Tracker (DRLT)]
+
+This is a model that integrates convolutional network with recurrent network, and builds up a spatial-temporal representation of the video. It fuses past recurrent states with current visual features to make predictions of the target object’s location relative to the image within subsequent frames over time. This models processes video frames as a whole and directly outputs location predictions of the target in each frame.e. The tracking algorithm is formulated as a sequential decision-making process of a goal-oriented agent interacting with the visual environment. The model consists of two major components: an observation network and a recurrent network. The observation network encodes representations of video frames. The recurrent network integrates these observations over time and predicts the bounding box location in each frame. Training this network to maximize the overall tracking performance is a non-trivial task. 
+
+During training, the inputs are the training videos with ground-truth (question: the ground-truth is for the very first or initial frame or for every frame int the training sequence?) because the reward functions are calculated based on the predicted locations and ground truth.
+
+During testing, the network parameters are fixed and no online fine-tuning is needed. The procedure at test time is as simple as computing one forward pass of our algorithm, i.e., given a test video, the deep RL tracker predicts the location of target object in every single frame by sequentially processing the video data.
+
+Implementation Details:
+
+* Observation network: A https://arxiv.org/pdf/1506.02640v5.pdf[YOLO] network was used and fine-tuned on the PASCAL VOC dataset to extract visual features from observed video frames as YOLO was accurate and time-efficient. The first FC-layer features were extracted and concatenated with the location vector into a 5000-dimensional vector. Since the pre-trained YOLO
+weights were fixed during training, one more FC-layer was added, with 5000 neurons on top of the concatenated vector, and provided the final observation vector as the input to the recurrent network.
+* Recurrent network: A 1-layer LSTM network was used with 5000 hidden units. At each timestep t, the last 4 digits were directly taken as the mean value µ of the location policy. The location policy was sampled from a Gaussian distribution with mean µ and variance σ during training, and it was found that σ = 10−2 was good for both randomness and certainty in our experiment. During testing, the output mean value µ was directly used as prediction which was the same as setting σ.
+
+More claimes:
+
+* This model is trained end-to-end with deep RL algorithms, in which the model is optimized to maximize a tracking performance measure in the long run.
+* This model is trained fully off-line. When applied to online tracking, only a single forward pass is computed and no online fine-tuning is needed, allowing us to run at frame-rates beyond real-time.
+* The extensive experiments demonstrate the outstanding performance of DRLT algorithm compared to the state-of-the-art techniques in public tracking benchmark.
+
+==== https://arxiv.org/pdf/1702.06291.pdf[Real-time visual tracking by deep reinforced decision making]
+
+This model is composed of two parts: 
+
+* matching network: produces prediction heatmaps as a result of localizing the target templates inside a given search image
+* policy network: produces the normalized scores of prediction maps obtained from the matching network
+
+Matching network is a Siamese network which consists of shared convolutional layers as feature extractors and fully connected layers for matching. Matching result is passed to the policy network where it also consists of convolutional layers for state abstraction and fully connected layers for policy generation.
+
+In practice, explicit labels on when and how to update the appearance model are not always available. This makes supervised learning infeasible. To resolve this problem,this paper adopts a reinforcement learning environment where given sequential states, an agent is prompted to make actions that can maximize the future reward. To achieve this learning task, this paper uses deep neural networks for efficient state representation. The authors claimed that their work is one of the first to utilize a deep reinforcement learning methodology for on-line update in visual tracking.
+
+To train the matching network, batch size of 64 is sampled from the http://imagenet.stanford.edu/index[ImageNet] dataset. The policy network is trained using 50,000 episodes randomly sampled from the 
+http://www.vicos.si/Research/VisualTrackingEvaluation[VOT-2015 benchmark dataset] (see https://arxiv.org/pdf/1502.05803.pdf[Visual object tracking performance measures revisited] for details)
+
+The tracker is implemented in Python using TensorFlow library. The implementation runs on an Intel Core i7-4790K 4GHz CPU with 24GB of RAM and the neural network is computed and trained on GeForce GTX TITAN X GPU with 12GB of VRAM. The tracker is running at an average of 43 frames per second (FPS) on http://cvlab.hanyang.ac.kr/tracker_benchmark/[OTB-2015] video dataset while maintaining a competitive performance compared to other real-time visual tracking algorithms.
+The authors mentioned that the other deep representation based trackers are running at 10 or less frames per second.
+
+==== https://arxiv.org/pdf/1705.10561.pdf[End-to-end Active Object Tracking via Reinforcement Learning]
+
+This paper proposes an end-to-end active tracking solution via deep reinforcement learning. Specifically a ConvNet-LSTM network is adopted taking as input raw video frames and outputting camera control actions (e.g., move forward, or turn left, and so on). The above two papers attend to passive object tracking.
+
+Because it is impossible to train the desired end-to-end active tracker in real-world scenarios, this paper uses two types of virtual environments for simulated training: http://vizdoom.cs.put.edu.pl/[ViZDoom] and https://arxiv.org/pdf/1609.01326.pdf[UnrealCV] that is compatible with https://gym.openai.com/[OpenAI Gym].
+
+The reward function is defined such that the maximum reward is achieved when the object stands perfectly in front of the agent with a distance d and exhibits no rotation.
+
+To make the tracker generalize well, this paper proposes simple yet effective techniques for environment augmentation during training, for example, flipping left-right the screen frame and randomly choosing some background objects (e.g., tree or building) in the environment and make them invisible.
+
+Question: In the active tracking environment, the actions taken the agent will have impact on the environment states, is this right ?
+
+https://arxiv.org/pdf/1708.02843.pdf[Online Multi-Object Tracking Using CNN-based Single Object Tracker]
+
+The goal of multi-object tracking (MOT) is to estimate the locations of multiple objects in the video and maintain their identities consistently in order to yield their individual trajectories.
+
+https://arxiv.org/pdf/1709.07065.pdf[Multi-camera Multi-object Tracking]
+
+This paper addresses the multi-camera multi-target tracking problem. 
+
+There are mainly two types of approaches for multi-camera system tracking. The first one is to do information association inter-camera and then across camera. The second one is to globally consider all input detections. This paper adopts the second approach.
+
+The authors first obtain the detection with a state-of-art detector based on deep learning. Then they treat the detections as a large graph and compute a globally maximum cliques optimization problem formed by mixed-integer linear program. They adopt re-identification LOMO feature for detection’s appearance feature extraction method and hankel matrix based IHTLS algorithm for motion feature. The two features are combined to provide edge weights for the graph
+
+https://github.com/ergysr/DeepCC[Github repository]: Features for Multi-Target Multi-Camera Tracking and Re-Identification]
+
+https://cvlab.epfl.ch/research/research-surv/research-body-surv-index-php/[Tracking Multiple People in a Multi-Camera Environment]
+
+
+
+https://arxiv.org/pdf/1506.02640v5.pdf[YOLO, 2016] https://arxiv.org/pdf/1612.08242.pdf[YOLO9000, 2016] https://pjreddie.com/media/files/papers/YOLOv3.pdf[YOLO v3]
+
+The benefits of YOLO over traditional methods of object detection:
+
+* YOLO is extremely fast:  The YOLO network with 24 convolutional layers runs at 45 frames per second with no batch processing on a Titan X GPU;  and a fast version (with 9 convolutional layers) runs at more than 150 fps. 
+  - The YOLO system proposes far fewer bounding boxes than other detectors like R-CNN, only 98 per image compared to about 2000 from Selective Search
+* YOLO sees the entire image and the larger context during training and test time so it implicitly encodes contextual information about classes as well as their appearance. So YOLO makes less background errors 
+* The YOLO design enables end-to-end training and realtime speeds while maintaining high average precision
+* YOLO learns generalizable representations of objects.
+
+Downsides and Limitations of YOLO
+
+* YOLO lags conpmared to the state-of-art detection systems in accuracy
+* YOLO is not good at detecting small objects in images. However, https://pjreddie.com/media/files/papers/YOLOv3.pdf[YOLOv3] improves the performance on small-size objects but has comparatively worse performance on medium and larger size objects.
+* YOLO imposes strong spatial constraints on bounding box predictions since each grid cell only predicts two boxes and can only have one class.
+* The main source of error is incorrect localizations
+
+Basic idea behind YOLO:
+
+* The YOLO system divides the input image into an S × S grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
+* Each grid cell predicts B bounding boxes and confidence scores for those boxes. Each bounding box consists of 5 predictions: (x, y, w, h), and confidence.
+  - The (x, y) coordinates represent the center of the box relative to the bounds of the grid cell.
+  - The width "w" and height "h" are predicted relative to the whole image
+  - The confidence prediction represents the IOU between the predicted box and any ground truth box multiplied by the probability that an object is present in the cell.
+* For each grid cell, given that an object is contained in the grid cell, the grid cell also predicts C (the number of classes in the dataset) conditional class probabilities, Pr(Class_i|Object) regardless of the number of boxes B. 
+
+Training of YOLO
+
+* Pretrain the first 20 convolutional layers on the ImageNet 1000-class competition dataset followed by an average-pooling layer and a fully connected layer.
+* Then convert the model to perform detection (). Add four convolutional layers and two fully connected layers with randomly initialized weights. Detection often requires fine-grained visual information so YOLO increases the input resolution of the network from 224 × 224 to 448 × 448.
+* Loss function is a sum-squared error in the output of the model. To overcome model instability and early divergence,  increase the loss from bounding box coordinate predictions and decrease the loss from confidence predictions for boxes that don’t contain objects.
+* For data augmentation the authors introduce random scaling and translations of up to 20% of the original image size. The authors also randomly adjust the exposure and saturation of the image by up to a factor of 1.5 in the HSV color space.
 
 === Object Detection in Real Time
 
 Once a Deep Neural Network model (e.g., ResNet) finishes the training stage, it can be deployed into a production environment to answer questions or make predictions. In the second stage, one of the concerns is the inference time. It is usually demanded that the DNN model is able to provide answer or prediction with small latency (e.g., within tens of milliseconds for each question or sample).
 
-.General comments
+==== General comments
 * The inference time will depend heavily on the complexity of the model and the resolution of the images
   - The complexity of the model (the number of parameters and the network architecture) will be directly related to the required image resolution
 * The impact of image complexity (e.g, the number of objects present in the image) on the inference time will be minor.
 * Inference accerlation is desired for a server to be able to handle as many video cameras as possible
+* For https://arxiv.org/abs/1512.02325[SSD-300] (image size 300x300), about 80% of the forward time (inference time) is spent on the base newtork (VGG16 in the measurement). So the base network is crucial for SSD inference acceleration.
 
-.Inference acceleration
-* Hardware
-  - GPU: Can provide significant inference speedups and power efficiency (images/second/watts). Based on https://devblogs.nvidia.com/nvidia-serves-deep-learning-inference/[the performance test results] for TensorFlow ResNet-50 model running an Ubuntu 16.04 workstation with an Intel® Xeon® Gold 6140 CPU (Skylake) and an NVIDIA V100 GPU, at ~50ms latency target, nearly 80 inferences can be provided per second for a TensorFlow ResNet-50 model running on the CPU (handle up to 8 inference requests in parallel), while the V100 GPU allows to deliver over 11x speedup in inferences using a TensorFlow model TF_NEED_CUDA (allow up to 8 parallel requests to run on the GPU) compared to CPU.
-  - TPU: an ASIC designed by Google from the ground up for machine learning. Google reported that at 7ms per-prediction latency 
+==== Inference acceleration
+
+===== Hardware
+
+* GPU: Can provide significant inference speedups and power efficiency (images/second/watts). Based on https://devblogs.nvidia.com/nvidia-serves-deep-learning-inference/[the performance test results] for TensorFlow ResNet-50 model running an Ubuntu 16.04 workstation with an Intel® Xeon® Gold 6140 CPU (Skylake) and an NVIDIA V100 GPU, at about 50ms latency target, nearly 80 inferences can be provided per second for a TensorFlow ResNet-50 model running on the CPU (handle up to 8 inference requests in parallel), while the V100 GPU allows to deliver over 11x speedup in inferences using a TensorFlow model TF_NEED_CUDA (allow up to 8 parallel requests to run on the GPU) compared to CPU.
+* TPU: an ASIC designed by Google from the ground up for machine learning. Google reported that at 7ms per-prediction latency 
   for a common MLP architecture, TPU offers 15x to 30x higher throughput than CPU and GPU, and for a common CNN architecture, TPU achieves peak 70x better performance than CPU.
-* Algorithms (https://arxiv.org/pdf/1710.09282.pdf[Model compression])
+
+===== Algorithms (https://arxiv.org/pdf/1710.09282.pdf[Model compression])
 Compress overparameterized fully connected layers to meet strict latency requirements without significant performance degradtion, for example, bucketizing connection weights (pseudo)randomly using a hash function or by vector quantization.
-  - Parameter prunning and sharing: remove redundant and uncritical parameters in a pre-trained CNN model and then the CNN is retrained to adjust the weights of the remaining sparse connections.
-  - Low-rank factorization: Use matrix/tensor decomposition to estimate the informative parameters of deep CNNs.
-  - Transferred/compact convolutional filters: design special structural convolutional filters to reduce the storage and computation complexity
-  - Knowledge distillation: learn a distilled model and train a more compact neural network to produce the output of a larger network.
+
+* Parameter prunning and sharing: remove redundant and uncritical parameters in a pre-trained CNN model and then the CNN is retrained to adjust the weights of the remaining sparse connections.
+* Low-rank factorization: Use matrix/tensor decomposition to estimate the informative parameters of deep CNNs.
+* Transferred/compact convolutional filters: design special structural convolutional filters to reduce the storage and computation complexity
+* Knowledge distillation: learn a distilled model and train a more compact neural network to produce the output of a larger network.
 
 https://medium.com/syncedreview/deep-learning-in-real-time-inference-acceleration-and-continuous-training-17dac9438b0b[Here] is a good report on DNN Inference Acceleration.
 
+Below is what we have learned from the https://arxiv.org/abs/1611.10012[study] on speed/accuracy trade-offs about a few popular CNN-based object detectors (https://arxiv.org/pdf/1506.01497.pdf[Faster R-CNN], https://arxiv.org/pdf/1605.06409.pdf[R-FCN] and https://arxiv.org/abs/1512.02325[SSD]):
 
-=== Network Models for Object Detection and Semantic Segmentation
+* The CNN-based models are deemed good enough to be deployed in consumer products considering memory footprint (mobile devices), real time performace (self driving cars) and accuracy & throughput (server-side production systems)
+* In the three models, a convolutional feature extractor is applied to the input image to obtain high-level features. The memory, speed and performace of the detectors will be affected by the choice of feature extractor. The feature extractors used in the study include VGG-16, Resnet-101, Inception v2, Inception v3, Inception Resnet v2 and MobileNet.
+* The maximum frame rate is capped by postprocessing which includes non-max suppression (NMS) running on the CPU. NMS can take up the bulk of the running for the fastest model in terms the inference time.
+* Running time per image ranges from tens of milli-seconds to almost 1 second (Nvidia GeForce GTX Titan X GPU). SSD and R-FCN are faster on average than Faster R-CNN, but if the number of region proposals is limitted, Faster R-CNN can be as fast as SSD and F-FCN
+* SSD is not very sensitive to the quality of feature extractor in terms of overall mAP. This implies that using cheaper feature extractor does not hurt SSD too much. However, SSD models typically have poor performance on detection of small objects in images. (Questions: what is the definition of feature extractor accuracy ? How do we measure it ?)
+* Image resolution can significantly impact detection accuracy. It was observed that decreasing resolution by a factor of two in both dimensions consistently lowers accuracy (by 15.88% on average). One reason for this is that high resolution inputs allow for small objects to be resolved.
+* Image resolution can significantly imapct on inference time. It is observed that decreasing resolution by a factor of two in both dimensions reduces inference time by a relative factor of 27.4%.
+* For Faster R-CNN and R-FCN, thwe number of proposals computed by the region proposal network (RPN) is adjustable. 
+  - For Faster R-CNN, when the number of box proposal is reduced to 50 from 300, he performance losses are minor (we can obtain 96% of the accuracy of using 300 proposals) while reducing inference time by a factor of 3.
+  - For R-FCN, the savings fron using fewer proposals are minimal.
+* Use of model ensemble with multi-crop can improve performance on samll object recall by nearly 60%.
