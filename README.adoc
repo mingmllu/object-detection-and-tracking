@@ -48,6 +48,7 @@ The most important things to remember about RoI Pooling?
 https://lilianweng.github.io/lil-log/2017/12/31/object-recognition-for-dummies-part-3.html[Object Recognition for Dummies Part 3: R-CNN Family]
 
 https://medium.com/nanonets/how-to-do-image-segmentation-using-deep-learning-c673cc5862ef[How to do Semantic Segmentation using Deep learning]
+
 https://towardsdatascience.com/semantic-segmentation-with-deep-learning-a-guide-and-code-e52fc8958823[Semantic Segmentation with Deep Learning]
 
 https://arxiv.org/abs/1512.02325[SSD: Single Shot MultiBox Detector]
@@ -60,6 +61,41 @@ Two challenges when applying deep CNNs to the task of semantic segmentation:
 
 * The reduced feature resolution caused by consecutive pooling operations or convolution striding, which allows deep CNNs to learn increasingly abstract feature representations. For the so-called dense prediction tasks like segmentation, detailed spatial information is desired. With atrous convolution, one is able to control the resolution at which feature responses are computed within DCNNs without requiring learning extra parameters.
 * The existence of objects at multiple scales
+
+https://arxiv.org/pdf/1506.02640v5.pdf[YOLO],
+https://arxiv.org/pdf/1612.08242.pdf[YOLO9000],
+https://pjreddie.com/media/files/papers/YOLOv3.pdf[YOLO v3]
+
+The benefits of YOLO over traditional methods of object detection:
+
+* YOLO is extremely fast:  The YOLO network with 24 convolutional layers runs at 45 frames per second with no batch processing on a Titan X GPU;  and a fast version (with 9 convolutional layers) runs at more than 150 fps. 
+  - The YOLO system proposes far fewer bounding boxes than other detectors like R-CNN, only 98 per image compared to about 2000 from Selective Search
+* YOLO sees the entire image and the larger context during training and test time so it implicitly encodes contextual information about classes as well as their appearance. So YOLO makes less background errors 
+* The YOLO design enables end-to-end training and realtime speeds while maintaining high average precision
+* YOLO learns generalizable representations of objects.
+
+Downsides and Limitations of YOLO
+
+* YOLO lags conpmared to the state-of-art detection systems in accuracy
+* YOLO is not good at detecting small objects in images. However, https://pjreddie.com/media/files/papers/YOLOv3.pdf[YOLOv3] improves the performance on small-size objects but has comparatively worse performance on medium and larger size objects.
+* YOLO imposes strong spatial constraints on bounding box predictions since each grid cell only predicts two boxes and can only have one class.
+* The main source of error is incorrect localizations
+
+Basic idea behind YOLO:
+
+* The YOLO system divides the input image into an S × S grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
+* Each grid cell predicts B bounding boxes and confidence scores for those boxes. Each bounding box consists of 5 predictions: (x, y, w, h), and confidence.
+  - The (x, y) coordinates represent the center of the box relative to the bounds of the grid cell.
+  - The width "w" and height "h" are predicted relative to the whole image
+  - The confidence prediction represents the IOU between the predicted box and any ground truth box multiplied by the probability that an object is present in the cell.
+* For each grid cell, given that an object is contained in the grid cell, the grid cell also predicts C (the number of classes in the dataset) conditional class probabilities, Pr(Class_i|Object) regardless of the number of boxes B. 
+
+Training of YOLO
+
+* Pretrain the first 20 convolutional layers on the ImageNet 1000-class competition dataset followed by an average-pooling layer and a fully connected layer.
+* Then convert the model to perform detection (). Add four convolutional layers and two fully connected layers with randomly initialized weights. Detection often requires fine-grained visual information so YOLO increases the input resolution of the network from 224 × 224 to 448 × 448.
+* Loss function is a sum-squared error in the output of the model. To overcome model instability and early divergence,  increase the loss from bounding box coordinate predictions and decrease the loss from confidence predictions for boxes that don’t contain objects.
+* For data augmentation the authors introduce random scaling and translations of up to 20% of the original image size. The authors also randomly adjust the exposure and saturation of the image by up to a factor of 1.5 in the HSV color space.
 
 === Object Tracking 
 
@@ -161,41 +197,6 @@ The authors first obtain the detection with a state-of-art detector based on dee
 https://github.com/ergysr/DeepCC[Github repository]: Features for Multi-Target Multi-Camera Tracking and Re-Identification]
 
 https://cvlab.epfl.ch/research/research-surv/research-body-surv-index-php/[Tracking Multiple People in a Multi-Camera Environment]
-
-
-
-https://arxiv.org/pdf/1506.02640v5.pdf[YOLO, 2016] https://arxiv.org/pdf/1612.08242.pdf[YOLO9000, 2016] https://pjreddie.com/media/files/papers/YOLOv3.pdf[YOLO v3]
-
-The benefits of YOLO over traditional methods of object detection:
-
-* YOLO is extremely fast:  The YOLO network with 24 convolutional layers runs at 45 frames per second with no batch processing on a Titan X GPU;  and a fast version (with 9 convolutional layers) runs at more than 150 fps. 
-  - The YOLO system proposes far fewer bounding boxes than other detectors like R-CNN, only 98 per image compared to about 2000 from Selective Search
-* YOLO sees the entire image and the larger context during training and test time so it implicitly encodes contextual information about classes as well as their appearance. So YOLO makes less background errors 
-* The YOLO design enables end-to-end training and realtime speeds while maintaining high average precision
-* YOLO learns generalizable representations of objects.
-
-Downsides and Limitations of YOLO
-
-* YOLO lags conpmared to the state-of-art detection systems in accuracy
-* YOLO is not good at detecting small objects in images. However, https://pjreddie.com/media/files/papers/YOLOv3.pdf[YOLOv3] improves the performance on small-size objects but has comparatively worse performance on medium and larger size objects.
-* YOLO imposes strong spatial constraints on bounding box predictions since each grid cell only predicts two boxes and can only have one class.
-* The main source of error is incorrect localizations
-
-Basic idea behind YOLO:
-
-* The YOLO system divides the input image into an S × S grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
-* Each grid cell predicts B bounding boxes and confidence scores for those boxes. Each bounding box consists of 5 predictions: (x, y, w, h), and confidence.
-  - The (x, y) coordinates represent the center of the box relative to the bounds of the grid cell.
-  - The width "w" and height "h" are predicted relative to the whole image
-  - The confidence prediction represents the IOU between the predicted box and any ground truth box multiplied by the probability that an object is present in the cell.
-* For each grid cell, given that an object is contained in the grid cell, the grid cell also predicts C (the number of classes in the dataset) conditional class probabilities, Pr(Class_i|Object) regardless of the number of boxes B. 
-
-Training of YOLO
-
-* Pretrain the first 20 convolutional layers on the ImageNet 1000-class competition dataset followed by an average-pooling layer and a fully connected layer.
-* Then convert the model to perform detection (). Add four convolutional layers and two fully connected layers with randomly initialized weights. Detection often requires fine-grained visual information so YOLO increases the input resolution of the network from 224 × 224 to 448 × 448.
-* Loss function is a sum-squared error in the output of the model. To overcome model instability and early divergence,  increase the loss from bounding box coordinate predictions and decrease the loss from confidence predictions for boxes that don’t contain objects.
-* For data augmentation the authors introduce random scaling and translations of up to 20% of the original image size. The authors also randomly adjust the exposure and saturation of the image by up to a factor of 1.5 in the HSV color space.
 
 === Object Detection in Real Time
 
