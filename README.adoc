@@ -240,3 +240,6 @@ Below is what we have learned from the https://arxiv.org/abs/1611.10012[study] o
   - For Faster R-CNN, when the number of box proposal is reduced to 50 from 300, he performance losses are minor (we can obtain 96% of the accuracy of using 300 proposals) while reducing inference time by a factor of 3.
   - For R-FCN, the savings fron using fewer proposals are minimal.
 * Use of model ensemble with multi-crop can improve performance on samll object recall by nearly 60%.
+
+=== Github resources
+https://github.com/DrewNF/Tensorflow_Object_Tracking_Video
