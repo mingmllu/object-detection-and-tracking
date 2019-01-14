@@ -183,6 +183,10 @@ To make the tracker generalize well, this paper proposes simple yet effective te
 
 Question: In the active tracking environment, the actions taken the agent will have impact on the environment states, is this right ?
 
+==== http://openaccess.thecvf.com/content_cvpr_2017/papers/Yun_Action-Decision_Networks_for_CVPR_2017_paper.pdf[Action-Decision Networks for Visual Tracking with Deep Reinforcement Learning]
+
+https://github.com/ildoonet/tf-adnet-tracking[One TF-based implementation]
+
 https://arxiv.org/pdf/1708.02843.pdf[Online Multi-Object Tracking Using CNN-based Single Object Tracker]
 
 The goal of multi-object tracking (MOT) is to estimate the locations of multiple objects in the video and maintain their identities consistently in order to yield their individual trajectories.
