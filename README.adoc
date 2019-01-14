@@ -53,6 +53,7 @@ https://towardsdatascience.com/semantic-segmentation-with-deep-learning-a-guide-
 
 https://arxiv.org/abs/1512.02325[SSD: Single Shot MultiBox Detector]
 SSD uses a single feedward convolutional network to directly predict classes and anchor (i.e.,box) offsets without requiring a second stage per-proposal classification operation. For SSD, because there is no follow-up feature resampling step as in Faster R-CNN, the classification task for small objects is relatively hard. The following data augmentation strategy will help improve the performance dramatically, especially on small dataset:
+
 * Use the entire original input image
 * Sample a patch so that the minimum jaccard overlap (IoU) with the objects is 0.1, 0.3, 0.5, 0.7, or 0.9. The size of each sampled patch is [0.1, 1] of the original image size and the aspect ratio is between 1/2 and 2. Keep the overlapped part of the ground truth box if the center of it is in the sampled patch. REsize each sampled patch to fixed size; horizontally flip each patch with probability of 0.5. Apply some photo-metric distortions.
 * Randomly sample a patch
