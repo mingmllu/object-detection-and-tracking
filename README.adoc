@@ -10,6 +10,8 @@ We'll pay attention to the following aspects in the investigation:
 
 https://github.com/abhineet123/Deep-Learning-for-Tracking-and-Detection[Here] please find a collection of papers and comments on deep-learning based detection and tracking models.
 
+https://github.com/SpyderXu/multi-object-tracking-paper-list[A list of papers on multi-object tracking]
+
 === Network Architectures for Object Detection and Semantic Segmentation
 
 What is the state of the art object detection algorithm in 2018 ?
