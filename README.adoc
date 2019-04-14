@@ -1,5 +1,7 @@
 == Object Detection, Segmentation and Tracking
 
+https://behavioranalyticsretail.com/technologies-tracking-people/[15 Technologies of People Tracking]
+
 An investigation into the state-of-the-art objection detection methods is conducted in order to enhance the existing lab demo system.
 We'll pay attention to the following aspects in the investigation:
 
