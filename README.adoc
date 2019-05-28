@@ -19,7 +19,9 @@ https://github.com/SpyderXu/multi-object-tracking-paper-list[A list of papers on
 What is the state of the art object detection algorithm in 2018 ?
 
 Instance segmentation = Object detection (pixel-wise labels) + semantic segmentation (color mask)
+
 Mask R-CNN = Faster R-CNN + FCN to achieve instance segmentation
+
 RoI Aligning preserves spatial orientation of features with no loss
 
 Semantic segmentation
